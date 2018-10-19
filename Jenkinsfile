@@ -21,6 +21,11 @@ pipeline {
   }
 
   post {
-    currentBuild.description = "$SBT_VERSION"
+    success {
+      script {
+
+        currentBuild.description = "$SBT_VERSION"
+      }
+    }
   }
 }
