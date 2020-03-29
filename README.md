@@ -1,6 +1,6 @@
 # sbt
 
-[![Build Status](https://jenkins.rouly.net/buildStatus/icon?job=builds%2Fsbt-docker%2Fmaster&build=3)](https://jenkins.rouly.net/job/builds/job/sbt-docker/job/master/3/)
+[![Build Status](https://jenkins.rouly.net/buildStatus/icon?job=builds%2Fsbt-docker%2Fmaster)](https://jenkins.rouly.net/job/builds/job/sbt-docker/job/master/)
 
 This is a docker base image with [sbt](https://www.scala-sbt.org) on Alpine linux.
 
