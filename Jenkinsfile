@@ -1,30 +1,37 @@
+def versions = [
+  '1.3.8',
+  '1.2.8',
+  '1.1.6',
+  '1.0.4',
+  '0.13.18',
+]
+
+def build(String version) {
+  return {
+    stage("building sbt-docker $version") {
+      script {
+        docker.withRegistry('', 'docker-hub') {
+          docker
+            .build("jrouly/sbt:$SBT_VERSION", "--build-arg SBT_VERSION=$SBT_VERSION .")
+            .push()
+        }
+      }
+    }
+  }
+}
+
 pipeline {
 
   agent any
-
-  parameters {
-    string(defaultValue: 'x.x.x', description: 'Which version of sbt to build?', name: 'SBT_VERSION')
-  }
 
   stages {
     stage('Docker Build') {
       steps {
         script {
-          docker.withRegistry('', 'docker-hub') {
-            docker
-              .build("jrouly/sbt:$SBT_VERSION", "--build-arg SBT_VERSION=$SBT_VERSION .")
-              .push()
+          parallel versions.collectEntries {
+            ["${it}": build(it)]
           }
         }
-      }
-    }
-  }
-
-  post {
-    success {
-      script {
-
-        currentBuild.description = "$SBT_VERSION"
       }
     }
   }
