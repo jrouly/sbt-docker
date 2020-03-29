@@ -12,7 +12,7 @@ def build(String version) {
       script {
         docker.withRegistry('', 'docker-hub') {
           docker
-            .build("jrouly/sbt:$SBT_VERSION", "--build-arg SBT_VERSION=$SBT_VERSION .")
+            .build("jrouly/sbt:$version", "--build-arg SBT_VERSION=$version .")
             .push()
         }
       }
