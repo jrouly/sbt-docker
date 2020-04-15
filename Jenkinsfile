@@ -19,12 +19,13 @@ def build(String version) {
     }
 
     stage("pushing sbt-docker $version") {
-      when { branch "master" }
       script {
-        docker.withRegistry('', 'docker-hub') {
-          sh """
-            docker push jrouly/sbt:$version
-          """
+        if (env.BRANCH_NAME ==~ /(master)/) {
+          docker.withRegistry('', 'docker-hub') {
+            sh """
+              docker push jrouly/sbt:$version
+            """
+          }
         }
       }
     }
