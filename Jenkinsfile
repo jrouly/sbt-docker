@@ -19,6 +19,7 @@ def build(String version) {
     }
 
     stage("pushing sbt-docker $version") {
+      when { branch "master" }
       script {
         docker.withRegistry('', 'docker-hub') {
           sh """
