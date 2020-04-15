@@ -11,9 +11,19 @@ def build(String version) {
     stage("building sbt-docker $version") {
       script {
         docker.withRegistry('', 'docker-hub') {
-          docker
-            .build("jrouly/sbt:$version", "--build-arg SBT_VERSION=$version .")
-            .push()
+          sh """
+            docker build . -t jrouly/sbt:$version --build-arg SBT_VERSION=$version
+          """
+        }
+      }
+    }
+
+    stage("pushing sbt-docker $version") {
+      script {
+        docker.withRegistry('', 'docker-hub') {
+          sh """
+            docker push jrouly/sbt:$version
+          """
         }
       }
     }
