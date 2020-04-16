@@ -23,7 +23,7 @@ build_docker_image() {
     --build-arg PROJECT_ROOT=$project_dir \
     --build-arg SBT_VERSION=$sbt_version
 
-  if [[ "$BRANCH" == "master" ]]
+  if [[ "$GIT_BRANCH" == "master" ]]
   then
     docker push jrouly/sbt:$sbt_version
   fi
