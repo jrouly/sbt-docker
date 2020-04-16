@@ -1,0 +1,11 @@
+#!/bin/bash -ex
+
+PROJECT_ROOT=$1
+
+for project in $PROJECT_ROOT/*
+do
+  pushd .
+  cd $project
+  sbt compile
+  popd
+done

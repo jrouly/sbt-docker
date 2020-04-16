@@ -1,0 +1,65 @@
+#!/bin/bash -ex
+
+generate_fake_project() {
+  local base_dir="$1"
+  local sbt_version="$2"
+
+  pushd .
+  local project_dir="$base_dir/sbt-$sbt_version"
+  mkdir -p "$project_dir"
+  cd "$project_dir"
+  mkdir project
+  echo "sbt.version = $sbt_version" > project/build.properties
+  popd
+}
+
+build_docker_image() {
+  local sbt_version="$1"
+  local project_dir="$2"
+
+  docker build . \
+    -f Dockerfile \
+    -t jrouly/sbt:$sbt_version \
+    --build-arg PROJECT_ROOT=$project_dir \
+    --build-arg SBT_VERSION=$sbt_version
+
+  if [[ "$BRANCH" == "master" ]]
+  then
+    docker push jrouly/sbt:$sbt_version
+  fi
+}
+
+main() {
+  local project_dir_prefix="projects/sbt-"
+  local versions=$(cat versions)
+
+  # Clean up.
+  rm -rf ${project_dir_prefix}*
+
+  # Create fake projects.
+  for version in $versions
+  do
+    local project_dir="$project_dir_prefix$version"
+    rm -rf "$project_dir"
+    mkdir -p "$project_dir"
+
+    for project_version in $versions
+    do
+      generate_fake_project "$project_dir" "$project_version"
+    done
+  done
+
+  ls ${project_dir_prefix}*
+
+  # Build docker images.
+  for version in $versions
+  do
+    local project_dir="$project_dir_prefix$version"
+    build_docker_image $version $project_dir
+  done
+
+  # Clean up.
+  rm -rf ${project_dir_prefix}*
+}
+
+main "$@"
