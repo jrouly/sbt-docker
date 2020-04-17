@@ -1,0 +1,8 @@
+ARG SBT_VERSION
+FROM jrouly/sbt:$SBT_VERSION
+
+# Pre-load all available sbt versions.
+ARG PROJECT_ROOT
+COPY $PROJECT_ROOT sbt-preload-projects
+COPY sbt-preload .
+RUN ./sbt-preload sbt-preload-projects

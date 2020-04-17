@@ -8,6 +8,10 @@ pipeline {
     ansiColor('xterm')
   }
 
+  parameters {
+    booleanParam(name: 'build_preloaded', defaultValue: false, description: 'build preloaded images')
+  }
+
   stages {
     stage('docker build') {
       steps {

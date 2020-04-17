@@ -2,8 +2,7 @@
 
 PROJECT_ROOT=$1
 
-for project in $PROJECT_ROOT/*
-do
+for project in $PROJECT_ROOT/* ; do
   pushd .
   cd $project
   sbt compile

@@ -1,5 +1,21 @@
 #!/bin/bash -ex
 
+# Build the 'lite' docker image for an SBT version.
+# This is just an Alpine image with JDK 8 and SBT.
+# Will publish if the branch is master.
+build_lite_docker_image() {
+  local sbt_version="$1"
+
+  docker build . \
+    -f Dockerfile.lite \
+    -t jrouly/sbt:$sbt_version \
+    --build-arg SBT_VERSION=$sbt_version
+
+  if [[ "$GIT_BRANCH" == "master" ]] ; then
+    docker push jrouly/sbt:$sbt_version
+  fi
+}
+
 generate_fake_project() {
   local base_dir="$1"
   local sbt_version="$2"
@@ -13,38 +29,31 @@ generate_fake_project() {
   popd
 }
 
-build_docker_image() {
+build_preloaded_docker_image() {
   local sbt_version="$1"
   local project_dir="$2"
 
   docker build . \
-    -f Dockerfile \
-    -t jrouly/sbt:$sbt_version \
+    -f Dockerfile.preload \
+    -t jrouly/sbt:$sbt_version-preloaded \
     --build-arg PROJECT_ROOT=$project_dir \
     --build-arg SBT_VERSION=$sbt_version
 
-  if [[ "$GIT_BRANCH" == "master" ]]
-  then
-    docker push jrouly/sbt:$sbt_version
+  if [[ "$GIT_BRANCH" == "master" ]] ; then
+    docker push jrouly/sbt:$sbt_version-preloaded
   fi
 }
 
-main() {
-  local project_dir_prefix="projects/sbt-"
-  local versions=$(cat versions)
-
-  # Clean up.
+build_preloaded() {
+  # Clean up fake projects.
   rm -rf ${project_dir_prefix}*
 
   # Create fake projects.
-  for version in $versions
-  do
+  for version in $versions ; do
     local project_dir="$project_dir_prefix$version"
-    rm -rf "$project_dir"
     mkdir -p "$project_dir"
 
-    for project_version in $versions
-    do
+    for project_version in $versions ; do
       generate_fake_project "$project_dir" "$project_version"
     done
   done
@@ -52,14 +61,28 @@ main() {
   ls ${project_dir_prefix}*
 
   # Build docker images.
-  for version in $versions
-  do
+  for version in $versions ; do
     local project_dir="$project_dir_prefix$version"
-    build_docker_image $version $project_dir
+    build_preloaded_docker_image $version $project_dir
   done
 
-  # Clean up.
+  # Clean up fake projects.
   rm -rf ${project_dir_prefix}*
+}
+
+main() {
+  local project_dir_prefix="projects/sbt-"
+  local versions=$(cat versions)
+
+  # Build lite docker images.
+  for version in $versions ; do
+    build_lite_docker_image $version
+  done
+
+  # If build_preloaded is set, build preloaded images as well.
+  if [[ "$build_preloaded" == "true" ]] ; then
+    build_preloaded
+  fi
 }
 
 main "$@"
